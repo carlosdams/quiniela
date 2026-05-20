@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Polla Mundial 2026</title>
+<title>Quiniela Mundial 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <style>
@@ -30,6 +30,13 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
 .topbar-back{color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;margin-right:4px;}
 .progress-pill{background:rgba(255,255,255,0.12);border-radius:20px;padding:3px 10px;font-size:11px;color:rgba(255,255,255,0.7);}
 
+/* topbar nav buttons (used on portada) */
+.topbar-nav-btn{background:#ffdede;border:1px solid #ff9a9a;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;color:#7a0000;cursor:pointer;backdrop-filter:blur(4px);}
+
+@media (min-width:900px){
+  .topbar-nav-btn{padding:10px 14px;font-size:15px;border-radius:9px;}
+}
+
 /* ── PORTADA ── */
 .portada-hero{background:var(--verde);padding:0;position:relative;}
 .portada-subtitle{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px;}
@@ -38,11 +45,11 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
 .mascotas{display:flex;justify-content:center;align-items:flex-end;gap:16px;padding-bottom:0;}
 .mascota{text-align:center;}
 .mascota img{height:100px;object-fit:contain;display:block;margin:0 auto;}
-.mascotas-img-wrap{width:100%;overflow:hidden;margin-top:0;}
-.mascotas-img{width:100%;height:auto;object-fit:contain;display:block;}
+.mascotas-img-wrap{width:100%;overflow:hidden;margin-top:0;max-height:220px;}
+.mascotas-img{width:100%;height:auto;max-height:220px;object-fit:contain;display:block;}
 .mascota-name{font-size:12px;font-weight:600;color:var(--gold);margin-top:4px;}
 .mascota-pais{font-size:10px;color:rgba(255,255,255,0.4);}
-.mascota.center img{height:120px;}
+.mascota.center img{height:100px;}
 
 .portada-body{background:var(--bg);padding:16px 16px 20px;flex:1;}
 .portada-label{font-size:13px;color:var(--muted);text-align:center;margin-bottom:14px;}
@@ -62,8 +69,17 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
 .nav-card-title{font-size:13px;font-weight:600;color:var(--dark);}
 .nav-card-sub{font-size:11px;color:var(--muted);margin-top:2px;}
 
+/* Larger nav buttons on desktop: keep mobile unchanged */
+@media (min-width:900px){
+  .nav-cards{gap:14px;}
+  .nav-card{padding:18px 16px;border-radius:12px;font-size:15px;}
+  .nav-card-icon{font-size:28px;margin-bottom:6px;}
+  .nav-card-title{font-size:15px;}
+  .nav-card-sub{font-size:12px;margin-top:4px;}
+}
+
 .action-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.btn-guardar{background:#fff;border:1.5px solid var(--verde);border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:var(--verde);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-guardar{background:#d6eeff;border:1.5px solid #6fb3ff;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#0a4f7a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-pdf{background:var(--gold);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-guardar:active,.btn-pdf:active{transform:scale(0.97);}
 
@@ -228,11 +244,11 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
 <div class="screen active" id="s0">
   <div class="portada-hero">
     <div class="topbar" style="position:absolute;top:0;left:0;right:0;z-index:10;background:transparent;padding:10px 14px;">
-      <div class="topbar-logo">🏆 POLLA MUNDIAL 2026</div>
+      <div class="topbar-logo">🏆 QUINIELA MUNDIAL 2026</div>
       <div style="display:flex;gap:6px;">
-        <button onclick="irA(1)" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;backdrop-filter:blur(4px);">Grupos</button>
-        <button onclick="irA(2)" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;backdrop-filter:blur(4px);">Elim.</button>
-        <button onclick="irA(3)" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;backdrop-filter:blur(4px);">Esp.</button>
+        <button class="topbar-nav-btn" onclick="irA(1)">Grupos</button>
+        <button class="topbar-nav-btn" onclick="irA(2)">Elim.</button>
+        <button class="topbar-nav-btn" onclick="irA(3)">Esp.</button>
         <div class="progress-pill" style="margin-left:4px;"><span id="pP">0%</span></div>
       </div>
     </div>
@@ -363,48 +379,8 @@ function fI(name){var c=_FC[name];if(!c)return'';return'<img src="https://flagcd
 
 // ── Lista de participantes ──
 var PARTICIPANTES=[
-  {n:1,nombre:'Alejandra (Metalicas)'},
-  {n:2,nombre:'Alex (Geomecanica)'},
-  {n:3,nombre:'Alexander (Laboratorio)'},
-  {n:4,nombre:'Antonio Cruz (Geologia)'},
-  {n:5,nombre:'Arlex (Planeamiento)'},
-  {n:6,nombre:'Canchila (Proyectos)'},
-  {n:7,nombre:'Carlos (G.humana)'},
-  {n:8,nombre:'Carlos (Laboratorio)'},
-  {n:9,nombre:'Daniel (Seguridad)'},
-  {n:10,nombre:'Deison (Geologia)'},
-  {n:11,nombre:'Derian (Mina)'},
-  {n:12,nombre:'Diego (Geologia)'},
-  {n:13,nombre:'Diego Agudelo (Mina)'},
-  {n:14,nombre:'Enrrique (Planeamiento)'},
-  {n:15,nombre:'Felix (Geologia)'},
-  {n:16,nombre:'Francisco M. (Mina)'},
-  {n:17,nombre:'Glenis (Servicios)'},
-  {n:18,nombre:'Haminton (Geologia)'},
-  {n:19,nombre:'Jainny (Rdc)'},
-  {n:20,nombre:'Jhonny (Planeamiento)'},
-  {n:21,nombre:'Jose (Geologia)'},
-  {n:22,nombre:'Jose (Planeamiento)'},
-  {n:23,nombre:'Juan Celis (Rdc)'},
-  {n:24,nombre:'Juan P. (planeamiento)'},
-  {n:25,nombre:'Julian (Man.Electrico)'},
-  {n:26,nombre:'Julio Serna (Mina)'},
-  {n:27,nombre:'Laura (Planeamiento)'},
-  {n:28,nombre:'Leonardo (Planeamiento)'},
-  {n:29,nombre:'Lorena (Geomecanica)'},
-  {n:30,nombre:'Manuel (Geologia)'},
-  {n:31,nombre:'Mario (Geologia)'},
-  {n:32,nombre:'Nelson (Man.Electrico)'},
-  {n:33,nombre:'Okoro (Mina)'},
-  {n:34,nombre:'Rafael (Geologia)'},
-  {n:35,nombre:'Santiago (Mina)'},
-  {n:36,nombre:'Sebastian (Geologia)'},
-  {n:37,nombre:'Sebastian (Logueo)'},
-  {n:38,nombre:'Sebastian (Planeamiento)'},
-  {n:39,nombre:'Stiven (Servicios)'},
-  {n:40,nombre:'Trujillo (Mina)'},
-  {n:41,nombre:'Vicente (Man.electrico)'},
-  {n:42,nombre:'William (Planeamiento)'}
+  {n:1,nombre:'Oswaldo Leon'},
+  {n:2,nombre:'Carlos Dams'}
 ];
 
 // ── Autocompletado por número ──
@@ -413,8 +389,8 @@ function acNum(){
   var tip=document.getElementById('ac-tip');
   if(!v){if(tip)tip.style.display='none';return;}
   var num=parseInt(v);
-  // Números libres 43-50: el participante escribe su nombre manualmente
-  if(num>=43&&num<=50){
+  // Números libres 10-50: el participante escribe su nombre manualmente
+  if(num>=10&&num<=50){
     document.getElementById('pN').value='';
     document.getElementById('pN').placeholder='Escribe tu nombre';
     if(tip){tip.textContent='Número libre — escribe tu nombre';tip.style.display='block';}
@@ -437,13 +413,10 @@ function acNombre(){
   // Si el número ya es libre (43-50), no sugerir nada
   var num=parseInt(document.getElementById('pNum').value.trim());
   if(num>=43&&num<=50){if(tip)tip.style.display='none';return;}
-  if(v.length<2){if(tip)tip.style.display='none';return;}
+  // Show suggestions but do not auto-fill the inputs
+  if(v.length<1){if(tip)tip.style.display='none';return;}
   var matches=PARTICIPANTES.filter(function(p){return p.nombre.toLowerCase().indexOf(v)>=0;});
-  if(matches.length===1){
-    document.getElementById('pN').value=matches[0].nombre;
-    document.getElementById('pNum').value=matches[0].n;
-    if(tip){tip.textContent='';tip.style.display='none';}
-  } else if(matches.length>1){
+  if(matches.length>0){
     if(tip){
       tip.innerHTML=matches.map(function(p){
         return '<span class="ac-opt" onclick="acSelect('+p.n+')">'+p.n+' – '+p.nombre+'</span>';
@@ -561,8 +534,8 @@ function rMT(m,side){var o=OCT.find(function(x){return x.id===m.id;});if(o)retur
     if(!pm2&&SFM[pp2])pm2={id:pp2,lp:SFM[pp2].lp,vp:SFM[pp2].vp};if(pm2)return rMT(pm2,r.s);}return null;}
 function rG(){var c=document.getElementById('gc');GS.forEach(function(g){var w=document.createElement('div');w.className='gw';
   var rs=g.pa.map(function(m){return'<tr id="tr_'+m.id+'"><td class="jr">'+m.j+'</td><td class="fl">'+m.fL+'</td><td class="nm">'+m.lo+'</td>'+
-    '<td class="std"><div class="sp2"><input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gl_'+m.id+'" placeholder="–" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+g.id+'\','+m.id+')">'+
-    '<span class="sep">:</span><input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gv_'+m.id+'" placeholder="–" autocomplete="off" oninput="oS(this,null,\''+g.id+'\','+m.id+')"></div></td>'+
+    '<td class="std"><div class="sp2"><input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gl_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+g.id+'\','+m.id+')">'+
+    '<span class="sep">:</span><input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gv_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,null,\''+g.id+'\','+m.id+')"></div></td>'+
     '<td class="fl">'+m.fV+'</td><td class="nm">'+m.vi+'</td><td class="fe">'+m.fe+'</td></tr>';}).join('');
   w.innerHTML='<div><div class="gh">GRUPO '+g.id+' <small>'+g.eq.map(function(e){return fI(e.n)+' '+e.n;}).join(' · ')+'</small></div>'+
     '<table class="tp"><thead><tr><th colspan="3" style="text-align:left">LOCAL</th><th>MARCADOR</th><th colspan="2" style="text-align:left">VISITANTE</th><th></th></tr></thead><tbody>'+rs+'</tbody></table></div>'+
@@ -593,8 +566,8 @@ function rE(cId,ms){var c=document.getElementById(cId);if(!c)return;ms.forEach(f
   var ref=m.lr?(m.lr+' vs '+m.vr):('W'+m.lp+' vs W'+m.vp);var lo=m.lr||('W'+m.lp);var vi=m.vr||('W'+m.vp);
   d.innerHTML='<div class="me-ref">'+ref+'</div><div class="ml">P'+m.id+' <span>'+m.fe+'</span></div>'+
     '<div class="mr"><div class="mt2"><div class="mf2" id="fL_'+m.id+'"></div><div class="mn tbd" id="nL_'+m.id+'">'+lo+'</div></div>'+
-    '<div class="mc"><div class="ms"><input class="msc" type="number" min="0" max="99" inputmode="numeric" id="egl_'+m.id+'" placeholder="–" autocomplete="off" oninput="oE(this,\'egv_'+m.id+'\','+m.id+')">'+
-    '<span class="msep">:</span><input class="msc" type="number" min="0" max="99" inputmode="numeric" id="egv_'+m.id+'" placeholder="–" autocomplete="off" oninput="oE(this,null,'+m.id+')"></div>'+
+    '<div class="mc"><div class="ms"><input class="msc" type="number" min="0" max="99" inputmode="numeric" id="egl_'+m.id+'" placeholder="" autocomplete="off" oninput="oE(this,\'egv_'+m.id+'\','+m.id+')">'+
+    '<span class="msep">:</span><input class="msc" type="number" min="0" max="99" inputmode="numeric" id="egv_'+m.id+'" placeholder="" autocomplete="off" oninput="oE(this,null,'+m.id+')"></div>'+
     '<div class="mpd">P'+m.id+'</div></div><div class="mt2 rr"><div class="mf2" id="fV_'+m.id+'"></div><div class="mn tbd" id="nV_'+m.id+'">'+vi+'</div></div></div>'+
     '<div id="pw_'+m.id+'"></div>';c.appendChild(d);});}
 function oE(inp,nId,mI){inp.classList.toggle('ok',inp.value!=='');if(inp.value.length>=2&&nId)document.getElementById(nId).focus();
@@ -803,7 +776,7 @@ function NP(){doc.addPage();y=8;}
 function pie(){
   doc.setFillColor(26,26,46);doc.rect(0,H-6,W,6,'F');
   doc.setTextColor(212,160,23);doc.setFontSize(6);doc.setFont('helvetica','bold');
-  doc.text('POLLA MUNDIAL 2026 — '+S(nm).toUpperCase()+'   Pag. '+doc.internal.getNumberOfPages(),W/2,H-2,{align:'center'});
+  doc.text('QUINIELA MUNDIAL 2026 — '+S(nm).toUpperCase()+'   Pag. '+doc.internal.getNumberOfPages(),W/2,H-2,{align:'center'});
 }
 
 // ── Portada ──────────────────────────────────────────────────────────────────
@@ -1124,7 +1097,7 @@ var honW2=EW/3;
   doc.text(S(h[1]).substring(0,16),hx+(honW2-1)/2,y+9,{align:'center'});
 });
 pie();
-var filename = 'Polla-2026-'+S(nm).replace(/\s+/g,'-')+'.pdf';
+var filename = 'Quiniela-2026-'+S(nm).replace(/\s+/g,'-')+'.pdf';
 try{
   // Prefer built-in save
   if(typeof doc.save === 'function'){
@@ -1316,9 +1289,9 @@ function renderGrupoActual(){
     h+='<div class="pjor">'+m.j+'</div>';
     h+='<div class="plocal">'+fI(m.lo)+' <span class="pn">'+m.lo+'</span></div>';
     h+='<div class="marcador">';
-    h+='<input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gl_'+m.id+'" placeholder="–" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+gId+'\','+m.id+')">';
+    h+='<input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gl_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+gId+'\','+m.id+')">';
     h+='<span class="sep">:</span>';
-    h+='<input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gv_'+m.id+'" placeholder="–" autocomplete="off" oninput="oS(this,null,\''+gId+'\','+m.id+')">';
+    h+='<input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gv_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,null,\''+gId+'\','+m.id+')">';
     h+='</div>';
     h+='<div class="pvisit"><span class="pn">'+m.vi+'</span> '+fI(m.vi)+'</div>';
     h+='<div class="pfecha">'+m.fe+'</div>';
@@ -1365,13 +1338,13 @@ function persistSaved(){
         sp4: (document.getElementById('sp4')||{}).value||''
       }
     };
-    localStorage.setItem('polla2026_saved', JSON.stringify(meta));
+    localStorage.setItem('quiniela2026_saved', JSON.stringify(meta));
   }catch(e){console.warn('persistSaved failed',e);}
 }
 
 function loadSaved(){
   try{
-    var raw = localStorage.getItem('polla2026_saved');
+    var raw = localStorage.getItem('quiniela2026_saved');
     if(!raw) return;
     var obj = JSON.parse(raw);
     if(obj && obj.savedScores){ savedScores = obj.savedScores; }
