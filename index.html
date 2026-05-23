@@ -691,8 +691,8 @@ function rMT(m,side){var o=OCT.find(function(x){return x.id===m.id;});if(o)retur
     if(!pm2&&SFM[pp2])pm2={id:pp2,lp:SFM[pp2].lp,vp:SFM[pp2].vp};if(pm2)return rMT(pm2,r.s);}return null;}
 function rG(){var c=document.getElementById('gc');GS.forEach(function(g){var w=document.createElement('div');w.className='gw';
   var rs=g.pa.map(function(m){return'<tr id="tr_'+m.id+'"><td class="jr">'+m.j+'</td><td class="fl">'+m.fL+'</td><td class="nm">'+m.lo+'</td>'+
-    '<td class="std"><div class="sp2"><input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gl_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+g.id+'\','+m.id+')">'+
-    '<span class="sep">:</span><input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gv_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,null,\''+g.id+'\','+m.id+')"></div></td>'+
+    '<td class="std"><div class="sp2"><input class="sc" type="number" min="0" max="99" step="1" inputmode="numeric" pattern="[0-9]*" id="gl_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+g.id+'\','+m.id+')">'+
+    '<span class="sep">:</span><input class="sc" type="number" min="0" max="99" step="1" inputmode="numeric" pattern="[0-9]*" id="gv_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,null,\''+g.id+'\','+m.id+')"></div></td>'+
     '<td class="fl">'+m.fV+'</td><td class="nm">'+m.vi+'</td><td class="fe">'+m.fe+'</td></tr>';}).join('');
   w.innerHTML='<div><div class="gh">GRUPO '+g.id+' <small>'+g.eq.map(function(e){return fI(e.n)+' '+e.n;}).join(' · ')+'</small></div>'+
     '<table class="tp"><thead><tr><th colspan="3" style="text-align:left">LOCAL</th><th>MARCADOR</th><th colspan="2" style="text-align:left">VISITANTE</th><th></th></tr></thead><tbody>'+rs+'</tbody></table></div>'+
@@ -716,18 +716,45 @@ function rT(gI){var g=GS.find(function(x){return x.id===gI;});var tb=document.ge
       tied.map(function(e){return'<option value="'+e.n+'">'+e.n+'</option>';}).join('')+'</select></div>';}
   else tw.innerHTML='';}
 function setTie(gI,nm){var s=document.getElementById('tie_g_'+gI);if(s)s.value=nm;savedScores['tie_g_'+gI]=nm;rT(gI);uEN();rMT3();rEmp();rBK();}
-function oS(inp,nId,gI,mI){savedScores[inp.id]=inp.value;inp.classList.toggle('ok',inp.value!=='');if(inp.value.length>=2&&nId)document.getElementById(nId).focus();
+function soloEnterosPositivos(el){
+  if(!el) return;
+  var v = String(el.value || '').replace(/[^0-9]/g, '');
+  if(v.length > 1){
+    v = String(parseInt(v, 10));
+    if(v === 'NaN') v = '';
+  }
+  if(v !== ''){
+    var n = parseInt(v, 10);
+    if(isNaN(n)) v = '';
+    else {
+      if(n < 0) n = 0;
+      if(n > 99) n = 99;
+      v = String(n);
+    }
+  }
+  el.value = v;
+}
+
+document.addEventListener('keydown', function(e){
+  var el = e.target;
+  if(!el || !el.classList || !(el.classList.contains('sc') || el.classList.contains('msc'))) return;
+  if(e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-' || e.key === '.' || e.key === ','){
+    e.preventDefault();
+  }
+});
+
+function oS(inp,nId,gI,mI){soloEnterosPositivos(inp);savedScores[inp.id]=inp.value;inp.classList.toggle('ok',inp.value!=='');if(inp.value.length>=2&&nId)document.getElementById(nId).focus();
   var a=document.getElementById('gl_'+mI),b=document.getElementById('gv_'+mI),tr=document.getElementById('tr_'+mI);
   if(tr)tr.classList.toggle('dn',a&&b&&a.value!==''&&b.value!=='');rT(gI);uEN();rMT3();rEmp();rBK();uP();}
 function rE(cId,ms){var c=document.getElementById(cId);if(!c)return;ms.forEach(function(m){var d=document.createElement('div');d.className='me';d.id='me_'+m.id;
   var ref=m.lr?(m.lr+' vs '+m.vr):('W'+m.lp+' vs W'+m.vp);var lo=m.lr||('W'+m.lp);var vi=m.vr||('W'+m.vp);
   d.innerHTML='<div class="me-ref">'+ref+'</div><div class="ml">P'+m.id+' <span>'+m.fe+'</span></div>'+
     '<div class="mr"><div class="mt2"><div class="mf2" id="fL_'+m.id+'"></div><div class="mn tbd" id="nL_'+m.id+'">'+lo+'</div></div>'+
-    '<div class="mc"><div class="ms"><input class="msc" type="number" min="0" max="99" inputmode="numeric" id="egl_'+m.id+'" placeholder="" autocomplete="off" oninput="oE(this,\'egv_'+m.id+'\','+m.id+')">'+
-    '<span class="msep">:</span><input class="msc" type="number" min="0" max="99" inputmode="numeric" id="egv_'+m.id+'" placeholder="" autocomplete="off" oninput="oE(this,null,'+m.id+')"></div>'+
+    '<div class="mc"><div class="ms"><input class="msc" type="number" min="0" max="99" step="1" inputmode="numeric" pattern="[0-9]*" id="egl_'+m.id+'" placeholder="" autocomplete="off" oninput="oE(this,\'egv_'+m.id+'\','+m.id+')">'+
+    '<span class="msep">:</span><input class="msc" type="number" min="0" max="99" step="1" inputmode="numeric" pattern="[0-9]*" id="egv_'+m.id+'" placeholder="" autocomplete="off" oninput="oE(this,null,'+m.id+')"></div>'+
     '<div class="mpd">P'+m.id+'</div></div><div class="mt2 rr"><div class="mf2" id="fV_'+m.id+'"></div><div class="mn tbd" id="nV_'+m.id+'">'+vi+'</div></div></div>'+
     '<div id="pw_'+m.id+'"></div>';c.appendChild(d);});}
-function oE(inp,nId,mI){inp.classList.toggle('ok',inp.value!=='');if(inp.value.length>=2&&nId)document.getElementById(nId).focus();
+function oE(inp,nId,mI){soloEnterosPositivos(inp);inp.classList.toggle('ok',inp.value!=='');if(inp.value.length>=2&&nId)document.getElementById(nId).focus();
   var a=document.getElementById('egl_'+mI),b=document.getElementById('egv_'+mI),me=document.getElementById('me_'+mI);
   if(me)me.classList.toggle('dn2',a&&b&&a.value!==''&&b.value!=='');
   var pw=document.getElementById('pw_'+mI);
@@ -1334,7 +1361,7 @@ function crearDatosJSON(validarGruposCompletosFlag){
   var nmEl=document.getElementById('pN');
   var numEl=document.getElementById('pNum');
   var nom=nmEl?nmEl.value.trim():'';
-  if(!nom){shT('Ingresa tu nombre primero');return null;}
+  if(!nom){shT('ingresa tu nombre primero en la pagina de inicio');return null;}
 
   saveCurrentGroup();
 
@@ -1389,7 +1416,7 @@ function descargarObjetoJSON(data){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  shT('✅ JSON descargado correctamente');
+  shT('✅ JSON generado correctamente');
 }
 
 function guardarJSON(){
@@ -1520,7 +1547,7 @@ function subirJSON(event){
 function pdfRapido(){
   var nm=document.getElementById('pN').value.trim();
   var num=document.getElementById('pNum').value.trim();
-  if(!nm){shT('Ingresa tu nombre primero');return;}
+  if(!nm){shT('ingresa tu nombre primero en la pagina de inicio');return;}
   var pr=rec();dG={n:nm,p:pr};
   genPDF();
 }
@@ -1584,9 +1611,9 @@ function renderGrupoActual(){
     h+='<div class="pjor">'+m.j+'</div>';
     h+='<div class="plocal">'+fI(m.lo)+' <span class="pn">'+m.lo+'</span></div>';
     h+='<div class="marcador">';
-    h+='<input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gl_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+gId+'\','+m.id+')">';
+    h+='<input class="sc" type="number" min="0" max="99" step="1" inputmode="numeric" pattern="[0-9]*" id="gl_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,\'gv_'+m.id+'\',\''+gId+'\','+m.id+')">';
     h+='<span class="sep">:</span>';
-    h+='<input class="sc" type="number" min="0" max="99" inputmode="numeric" id="gv_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,null,\''+gId+'\','+m.id+')">';
+    h+='<input class="sc" type="number" min="0" max="99" step="1" inputmode="numeric" pattern="[0-9]*" id="gv_'+m.id+'" placeholder="" autocomplete="off" oninput="oS(this,null,\''+gId+'\','+m.id+')">';
     h+='</div>';
     h+='<div class="pvisit"><span class="pn">'+m.vi+'</span> '+fI(m.vi)+'</div>';
     h+='<div class="pfecha">'+m.fe+'</div>';
