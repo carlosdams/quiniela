@@ -389,8 +389,8 @@ function acNum(){
   var tip=document.getElementById('ac-tip');
   if(!v){if(tip)tip.style.display='none';return;}
   var num=parseInt(v);
-  // Números libres 2-50: el participante escribe su nombre manualmente
-  if(num>=2&&num<=50){
+  // Números libres 3-50: el participante escribe su nombre manualmente
+  if(num>=3&&num<=50){
     document.getElementById('pN').value='';
     document.getElementById('pN').placeholder='Escribe tu nombre';
     if(tip){tip.textContent='Número libre — escribe tu nombre';tip.style.display='block';}
@@ -410,9 +410,9 @@ function acNum(){
 function acNombre(){
   var v=document.getElementById('pN').value.trim().toLowerCase();
   var tip=document.getElementById('ac-tip');
-  // Si el número ya es libre (2-50), no sugerir nada
+  // Si el número ya es libre (3-50), no sugerir nada
   var num=parseInt(document.getElementById('pNum').value.trim());
-  if(num>=2&&num<=50){if(tip)tip.style.display='none';return;}
+  if(num>=3&&num<=50){if(tip)tip.style.display='none';return;}
   // Show suggestions but do not auto-fill the inputs
   if(v.length<1){if(tip)tip.style.display='none';return;}
   var matches=PARTICIPANTES.filter(function(p){return p.nombre.toLowerCase().indexOf(v)>=0;});
