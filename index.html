@@ -584,48 +584,66 @@ var t3Ov={};
       };
     });
 
-    // FIFA first criteria: all group matches
-    t.sort(function (a, b) { return b.p - a.p || b.dg - a.dg || b.gf - a.gf || b.h - a.h; });
+    // FIFA 2026 group ranking:
+    // 1) Points in all group matches
+    // 2) Points in matches between tied teams
+    // 3) Goal difference in matches between tied teams
+    // 4) Goals scored in matches between tied teams
+    // 5) Overall goal difference
+    // 6) Overall goals scored
+    // 7) Manual/fair-play/FIFA ranking fallback
 
-    // Apply head-to-head only among teams still tied after points, DG, and GF
+    t.sort(function (a, b) {
+      return b.p - a.p;
+    });
+
     var finalOrder = [];
+
     for (var i = 0; i < t.length;) {
-      var tied = t.filter(function (x) {
-        return x.p === t[i].p && x.dg === t[i].dg && x.gf === t[i].gf;
+      var samePoints = t.filter(function (x) {
+        return x.p === t[i].p;
       });
 
-      if (tied.length === 1) {
-        finalOrder.push(tied[0]);
+      if (samePoints.length === 1) {
+        finalOrder.push(samePoints[0]);
         i++;
         continue;
       }
 
-      var tiedNames = tied.map(function (x) { return x.n; });
+      var tiedNames = samePoints.map(function (x) { return x.n; });
 
-      tied.forEach(function (x) {
+      samePoints.forEach(function (x) {
         var hs = miniStats(x.n, tiedNames);
         x.hp = hs.hp;
         x.hdg = hs.hdg;
         x.hgf = hs.hgf;
       });
 
-      tied.sort(function (a, b) {
-        return b.hp - a.hp || b.hdg - a.hdg || b.hgf - a.hgf;
+      samePoints.sort(function (a, b) {
+        return b.hp - a.hp ||
+          b.hdg - a.hdg ||
+          b.hgf - a.hgf ||
+          b.dg - a.dg ||
+          b.gf - a.gf;
       });
 
-      // If still tied after FIFA measurable criteria, mark for manual decision
-      for (var k = 0; k < tied.length; k++) {
-        var a = tied[k];
-        var stillTied = tied.filter(function (x) {
-          return x.hp === a.hp && x.hdg === a.hdg && x.hgf === a.hgf;
+      // Mark only teams still tied after all measurable criteria
+      samePoints.forEach(function (a) {
+        var stillTied = samePoints.filter(function (x) {
+          return x.hp === a.hp &&
+            x.hdg === a.hdg &&
+            x.hgf === a.hgf &&
+            x.dg === a.dg &&
+            x.gf === a.gf;
         });
+
         if (stillTied.length > 1) {
           a.td = 1;
         }
-      }
+      });
 
-      finalOrder = finalOrder.concat(tied);
-      i += tied.length;
+      finalOrder = finalOrder.concat(samePoints);
+      i += samePoints.length;
     }
 
     t = finalOrder;
