@@ -78,7 +78,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
   .nav-card-sub{font-size:12px;margin-top:4px;}
 }
 
-.action-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.action-btns{display:grid;grid-template-columns:1fr;gap:10px;}
+@media (min-width:700px){.action-btns{grid-template-columns:1fr 1fr 1fr;}}
 .btn-guardar{background:#d6eeff;border:1.5px solid #6fb3ff;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#0a4f7a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-pdf{background:var(--gold);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-guardar:active,.btn-pdf:active{transform:scale(0.97);}
@@ -271,8 +272,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
     </div>
     <div id="ac-tip" style="display:none;background:#1a3a1a;border:1px solid #c9960c;border-radius:8px;padding:6px 10px;margin-top:4px;font-size:13px;color:#fff;max-height:180px;overflow-y:auto;"></div>
     <div class="action-btns">
-      <button class="btn-guardar" onclick="guardar()">💾 Guardar</button>
+      <button class="btn-guardar" onclick="guardarJSON()">💾 Descargar JSON</button>
+      <button class="btn-guardar" onclick="document.getElementById('jsonLoadInput').click()">📂 Cargar JSON</button>
       <button class="btn-pdf" onclick="pdfRapido()">📄 Descargar PDF</button>
+      <input type="file" id="jsonLoadInput" accept="application/json" style="display:none" onchange="cargarJSON(event)">
     </div>
   </div>
 </div>
@@ -372,7 +375,6 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
 
 
 <script>
-var SURL='https://script.google.com/macros/s/AKfycbwp76OUjqUr0PZgGJKP_9JS4doqmVKGS9i8R5AJ7pqFJ1LjDYZXe0_xtU61neNs6a8R/exec';
 // Flag helper: convert country name to flag <img> tag using flagcdn
 var _FC={"México":"mx","Sudáfrica":"za","Corea del Sur":"kr","República Checa":"cz","Canadá":"ca","Bosnia":"ba","Catar":"qa","Suiza":"ch","Brasil":"br","Marruecos":"ma","Haití":"ht","Escocia":"gb-sct","Estados Unidos":"us","Paraguay":"py","Australia":"au","Turquía":"tr","Alemania":"de","Curazao":"cw","Costa de Marfil":"ci","Ecuador":"ec","Países Bajos":"nl","Japón":"jp","Suecia":"se","Túnez":"tn","Bélgica":"be","Egipto":"eg","Irán":"ir","Nueva Zelanda":"nz","España":"es","Cabo Verde":"cv","Arabia Saudita":"sa","Uruguay":"uy","Francia":"fr","Senegal":"sn","Irak":"iq","Noruega":"no","Argentina":"ar","Argelia":"dz","Austria":"at","Jordania":"jo","Portugal":"pt","Gales":"gb-wls","Serbia":"rs","Colombia":"co","Inglaterra":"gb-eng","Camerún":"cm","Panamá":"pa","China":"cn","Uzbekistán":"uz","RD Congo":"cd","Croacia":"hr","Ghana":"gh"};
 function fI(name){var c=_FC[name];if(!c)return'';return'<img src="https://flagcdn.com/w40/'+c+'.png" alt="" style="width:22px;height:15px;vertical-align:middle;border-radius:2px;">';}
@@ -899,13 +901,10 @@ function rec(){var pr={grupos:{},ties:{},t3Ov:'',elim:{},esp:{}};GS.forEach(func
 // Incluir desempate de mejor tercero
 pr.t3Ov=t3Ov&&t3Ov.g?t3Ov.g:'';
 OCT.concat(CUA).concat(SEM).concat(SFNL).concat(TER).concat(FNL).forEach(function(m){var lt=rMT(m,'lo'),vt=rMT(m,'vi');var penEl=document.getElementById('pen_'+m.id);var penVal=penEl?penEl.value:'';pr.elim[m.id]={id:m.id,fe:m.fe,j:m.j||'',lr:m.lr||'',vr:m.vr||'',lo:lt?lt.n:'',vi:vt?vt.n:'',fL:lt?lt.f:'',fV:vt?vt.f:'',gL:(document.getElementById('egl_'+m.id)||{}).value||'',gV:(document.getElementById('egv_'+m.id)||{}).value||'',pen:penVal};});pr.esp={c:(document.getElementById('sp1')||{}).value||'',t:(document.getElementById('sp3')||{}).value||'',g:(document.getElementById('sp4')||{}).value||''};return pr;}
-function enviar(){var nm=document.getElementById('pN').value.trim();if(!nm){shT('Escribe tu nombre');return;}
-var bt=document.getElementById('bS');bt.disabled=1;bt.textContent='ENVIANDO...';
-var pr=rec();dG={n:nm,p:pr};
-var body=JSON.stringify({nombre:nm,predicciones:pr.grupos,eliminatoria:pr.elim,especiales:pr.esp});
-fetch(SURL,{method:'POST',mode:'no-cors',body:body}).then(function(){shT('Datos enviados');}).catch(function(){shT('PDF listo');});
-bt.disabled=0;bt.textContent='ENVIAR MIS PREDICCIONES';
-document.getElementById('mOk').classList.add('show');}
+function enviar(){
+  // Compatibility fallback: old submit flow now downloads a JSON backup instead.
+  guardarJSON();
+}
 function genPDF(){if(!dG)return;
 // Guardar inputs visibles antes de calcular
 saveCurrentGroup();
@@ -1320,62 +1319,192 @@ function verificarGruposCompletos(){
   return faltantes;
 }
 
-function guardarGrupos(){
-  var nom=getNombreHoja();if(!nom)return;
+function crearDatosJSON(validarGruposCompletosFlag){
+  var nmEl=document.getElementById('pN');
+  var numEl=document.getElementById('pNum');
+  var nom=nmEl?nmEl.value.trim():'';
+  if(!nom){shT('Ingresa tu nombre primero');return null;}
+
   saveCurrentGroup();
-  // Validar que todos los marcadores estén llenos
-  var incompletos=verificarGruposCompletos();
-  if(incompletos.length>0){
-    alert('⚠️ Faltan marcadores en:\n'+incompletos.join('\n')+'\n\nDebes completar todos los partidos antes de guardar.');
-    // Ir al primer grupo incompleto
-    var primerIdx=grupoIds.indexOf(incompletos[0].replace('Grupo ',''));
-    if(primerIdx>=0){curGrupo=primerIdx;renderGrupoActual();}
-    return;
+
+  if(validarGruposCompletosFlag){
+    var incompletos=verificarGruposCompletos();
+    if(incompletos.length>0){
+      alert('⚠️ Faltan marcadores en:\n'+incompletos.join('\n')+'\n\nDebes completar todos los partidos antes de guardar.');
+      var primerIdx=grupoIds.indexOf(incompletos[0].replace('Grupo ',''));
+      if(primerIdx>=0){curGrupo=primerIdx;renderGrupoActual();}
+      return null;
+    }
   }
-  var pr=rec();dG={n:nom,p:pr};
-  var payload=JSON.stringify({nombre:nom,tipo:'grupos',predicciones:pr.grupos,standings:pr.standings,ties:pr.ties,t3Ov:pr.t3Ov});
-  shT('Guardando grupos...');
-  fetch(SURL,{method:'POST',mode:'no-cors',body:payload})
-    .then(function(){gruposGuardados=true;shT('✅ Grupos guardados correctamente');irA(0);})
-    .catch(function(){gruposGuardados=true;shT('✅ Grupos guardados correctamente');irA(0);});
+
+  autoHonor();
+  var pr=rec();
+  dG={n:nom,p:pr};
+
+  var values={};
+  document.querySelectorAll('input[id], select[id], textarea[id]').forEach(function(el){
+    if(el.type==='file')return;
+    if(el.type==='checkbox')values[el.id]=el.checked;
+    else values[el.id]=el.value;
+  });
+
+  return {
+    app:'quiniela-mundial-2026',
+    version:2,
+    savedAt:new Date().toISOString(),
+    participante:{
+      numero:numEl?numEl.value:'',
+      nombre:nom
+    },
+    currentGroup:grupoIds[curGrupo]||'A',
+    savedScores:savedScores,
+    values:values,
+    predicciones:pr
+  };
+}
+
+function descargarObjetoJSON(data){
+  if(!data)return;
+  var json=JSON.stringify(data,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var nombre=(data.participante&&data.participante.nombre)?data.participante.nombre:'quiniela';
+  nombre=nombre.replace(/[^a-z0-9_-]+/gi,'_').replace(/^_+|_+$/g,'')||'quiniela';
+  var fecha=new Date().toISOString().slice(0,10);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='quiniela_2026_'+nombre+'_'+fecha+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  shT('✅ JSON descargado correctamente');
+}
+
+function guardarJSON(){
+  var data=crearDatosJSON(false);
+  descargarObjetoJSON(data);
+}
+
+function guardarGrupos(){
+  // From the last group button: validate all group scores, then download JSON.
+  var data=crearDatosJSON(true);
+  descargarObjetoJSON(data);
+  if(data){gruposGuardados=true;irA(0);}
 }
 
 function guardarElim(){
-  var nom=getNombreHoja();if(!nom)return;
-  var pr=rec();dG={n:nom,p:pr};
-  var payload=JSON.stringify({nombre:nom,tipo:'elim',eliminatoria:pr.elim});
-  shT('Guardando eliminatoria...');
-  fetch(SURL,{method:'POST',mode:'no-cors',body:payload})
-    .then(function(){shT('Eliminatoria guardada ✓');})
-    .catch(function(){shT('Eliminatoria guardada ✓');});
+  var data=crearDatosJSON(false);
+  descargarObjetoJSON(data);
 }
+
 function guardarEsp(){
-  var nom=getNombreHoja();if(!nom)return;
-  var pr=rec();dG={n:nom,p:pr};
-  var payload=JSON.stringify({nombre:nom,tipo:'esp',especiales:pr.esp});
-  shT('Guardando especiales...');
-  fetch(SURL,{method:'POST',mode:'no-cors',body:payload})
-    .then(function(){shT('Especiales guardados ✓');})
-    .catch(function(){shT('Especiales guardados ✓');});
+  var data=crearDatosJSON(false);
+  descargarObjetoJSON(data);
 }
+
 function guardar(){
-  // Desde la portada: guarda lo que el usuario ha llenado
-  var nom=getNombreHoja();if(!nom)return;
-  saveCurrentGroup();
-  var pr=rec();dG={n:nom,p:pr};
-  // Enviar los 3 tipos secuencialmente
-  var payload=JSON.stringify({nombre:nom,tipo:'grupos',predicciones:pr.grupos,standings:pr.standings,ties:pr.ties,t3Ov:pr.t3Ov});
-  shT('Guardando...');
-  fetch(SURL,{method:'POST',mode:'no-cors',body:payload});
-  setTimeout(function(){
-    var p2=JSON.stringify({nombre:nom,tipo:'elim',eliminatoria:pr.elim});
-    fetch(SURL,{method:'POST',mode:'no-cors',body:p2});
-  },800);
-  setTimeout(function(){
-    var p3=JSON.stringify({nombre:nom,tipo:'esp',especiales:pr.esp});
-    fetch(SURL,{method:'POST',mode:'no-cors',body:p3});
-    document.getElementById('mOk').classList.add('show');
-  },1600);
+  guardarJSON();
+}
+
+function cargarJSON(event){
+  var file=event.target.files&&event.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data||(!data.savedScores&&!data.values&&!data.predicciones)){
+        alert('El archivo JSON no tiene el formato correcto.');
+        return;
+      }
+
+      // Restore participant fields first.
+      if(data.participante){
+        var pNum=document.getElementById('pNum');
+        var pN=document.getElementById('pN');
+        if(pNum)pNum.value=data.participante.numero||'';
+        if(pN)pN.value=data.participante.nombre||'';
+      }
+
+      // Restore saved group/tie values. This is the main source used when groups are re-rendered.
+      savedScores={};
+      if(data.savedScores){
+        Object.keys(data.savedScores).forEach(function(k){savedScores[k]=data.savedScores[k];});
+      }
+
+      // Backward compatibility: if a JSON only has raw values, copy group/tie IDs into savedScores too.
+      if(data.values){
+        Object.keys(data.values).forEach(function(id){
+          if(/^gl_/.test(id)||/^gv_/.test(id)||/^tie_g_/.test(id)) savedScores[id]=data.values[id];
+        });
+      }
+
+      // If the JSON has the richer predicciones object, recover group scores and manual ties from it too.
+      if(data.predicciones&&data.predicciones.grupos){
+        Object.keys(data.predicciones.grupos).forEach(function(gid){
+          (data.predicciones.grupos[gid]||[]).forEach(function(m){
+            if(m&&m.id!==undefined){
+              if(m.gL!==undefined&&m.gL!=='') savedScores['gl_'+m.id]=m.gL;
+              if(m.gV!==undefined&&m.gV!=='') savedScores['gv_'+m.id]=m.gV;
+            }
+          });
+        });
+      }
+      if(data.predicciones&&data.predicciones.ties){
+        Object.keys(data.predicciones.ties).forEach(function(gid){
+          savedScores['tie_g_'+gid]=data.predicciones.ties[gid];
+        });
+      }
+
+      // Restore currently available DOM values: participant, knockout, specials, penalties, etc.
+      if(data.values){
+        Object.keys(data.values).forEach(function(id){
+          var el=document.getElementById(id);
+          if(!el||el.type==='file')return;
+          if(el.type==='checkbox')el.checked=!!data.values[id];
+          else el.value=data.values[id];
+          el.dispatchEvent(new Event('input',{bubbles:true}));
+          el.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+      }
+
+      // Backward compatibility for predicciones.elim / predicciones.esp when values is missing or incomplete.
+      if(data.predicciones&&data.predicciones.elim){
+        Object.keys(data.predicciones.elim).forEach(function(pid){
+          var m=data.predicciones.elim[pid]||{};
+          var gl=document.getElementById('egl_'+pid), gv=document.getElementById('egv_'+pid), pen=document.getElementById('pen_'+pid);
+          if(gl&&m.gL!==undefined)gl.value=m.gL;
+          if(gv&&m.gV!==undefined)gv.value=m.gV;
+          if(pen&&m.pen!==undefined)pen.value=m.pen;
+        });
+      }
+      if(data.predicciones&&data.predicciones.esp){
+        var sp4=document.getElementById('sp4');
+        if(sp4&&data.predicciones.esp.g!==undefined)sp4.value=data.predicciones.esp.g;
+      }
+
+      if(data.currentGroup){
+        var idx=grupoIds.indexOf(data.currentGroup);
+        if(idx>=0)curGrupo=idx;
+      }
+
+      persistSaved();
+      renderGrupoActual();
+      uEN();
+      rMT3();
+      rEmp();
+      rBK();
+      autoHonor();
+      uP();
+      shT('✅ JSON cargado correctamente');
+    }catch(err){
+      console.error(err);
+      alert('No se pudo cargar el JSON. Verifica que el archivo sea válido.');
+    }
+    event.target.value='';
+  };
+  reader.readAsText(file);
 }
 function pdfRapido(){
   var nm=document.getElementById('pN').value.trim();
@@ -1466,7 +1595,7 @@ function renderGrupoActual(){
   var wrap=document.getElementById('btnGuardarGrupoWrap');
   if(wrap){
     if(curGrupo===11){
-      wrap.innerHTML='<button style="background:#fff;border:1.5px solid var(--gold);border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--gold);cursor:pointer;" onclick="guardarGrupos()">💾 Guardar</button>';
+      wrap.innerHTML='<button style="background:#fff;border:1.5px solid var(--gold);border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--gold);cursor:pointer;" onclick="guardarGrupos()">💾 Descargar JSON</button>';
     } else {
       wrap.innerHTML='';
     }
