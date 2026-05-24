@@ -1315,33 +1315,6 @@ function getNombreHoja(){
 var gruposGuardados=false;
 
   function volverDeGrupos() {
-    if (!gruposGuardados) {
-      // Verificar si hay algo que guardar
-      var hayDatos = Object.keys(savedScores).some(function (k) {
-        return savedScores[k] !== '';
-      });
-
-      if (hayDatos) {
-        var deseaDescargar = confirm(`⚠️ No has descargado un JSON de la fase de grupos a tu dispositivo.
-
-¿Deseas descargar un archivo JSON antes de salir?`);
-
-        if (deseaDescargar) {
-          var incompletos = verificarGruposCompletos();
-
-          if (incompletos.length > 0) {
-            alert(`Se descargará un archivo JSON que podrás usar para continuar con la carga de datos al subirlo.
-
-Te faltan los marcadores en los siguientes grupos:
-${incompletos.join(', ')}`);
-          }
-
-          guardarGrupos();
-          return;
-        }
-      }
-    }
-
     irA(0);
   }
 
