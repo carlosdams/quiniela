@@ -1447,105 +1447,189 @@ function guardar(){
   guardarJSON();
 }
 
-function subirJSON(event){
-  var file=event.target.files&&event.target.files[0];
-  if(!file)return;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var data=JSON.parse(e.target.result);
-      if(!data||(!data.savedScores&&!data.values&&!data.predicciones)){
-        alert('El archivo JSON no tiene el formato correcto.');
-        return;
-      }
+  function subirJSON(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
 
-      // Restore participant fields first.
-      if(data.participante){
-        var pNum=document.getElementById('pNum');
-        var pN=document.getElementById('pN');
-        if(pNum)pNum.value=data.participante.numero||'';
-        if(pN)pN.value=data.participante.nombre||'';
-      }
+    // Fast size check to avoid blocking UI with large files
+    var MAX_SIZE = 200 * 1024; // 200 KB
+    if (file.size && file.size > MAX_SIZE) {
+      alert('Archivo demasiado grande. ¿Estás subiendo el JSON generado por la página? Si es así, contacta a soporte.');
+      event.target.value = '';
+      return;
+    }
 
-      // Restore saved group/tie values. This is the main source used when groups are re-rendered.
-      savedScores={};
-      if(data.savedScores){
-        Object.keys(data.savedScores).forEach(function(k){savedScores[k]=data.savedScores[k];});
-      }
+    var reader = new FileReader();
 
-      // Backward compatibility: if a JSON only has raw values, copy group/tie IDs into savedScores too.
-      if(data.values){
-        Object.keys(data.values).forEach(function(id){
-          if(/^gl_/.test(id)||/^gv_/.test(id)||/^tie_g_/.test(id)) savedScores[id]=data.values[id];
-        });
-      }
+    reader.onload = function (e) {
+      try {
+        var data = JSON.parse(e.target.result);
 
-      // If the JSON has the richer predicciones object, recover group scores and manual ties from it too.
-      if(data.predicciones&&data.predicciones.grupos){
-        Object.keys(data.predicciones.grupos).forEach(function(gid){
-          (data.predicciones.grupos[gid]||[]).forEach(function(m){
-            if(m&&m.id!==undefined){
-              if(m.gL!==undefined&&m.gL!=='') savedScores['gl_'+m.id]=m.gL;
-              if(m.gV!==undefined&&m.gV!=='') savedScores['gv_'+m.id]=m.gV;
+        // Basic root validation
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          alert('El archivo JSON no tiene el formato correcto. ¿Estás subiendo el JSON generado por la página? Si es así, contacta a soporte.');
+          event.target.value = '';
+          return;
+        }
+
+        // Ensure known root keys, if present, are plain objects
+        if (data.savedScores && (typeof data.savedScores !== 'object' || Array.isArray(data.savedScores))) {
+          alert('Formato inválido: savedScores debe ser un objeto.');
+          event.target.value = '';
+          return;
+        }
+
+        if (data.values && (typeof data.values !== 'object' || Array.isArray(data.values))) {
+          alert('Formato inválido: values debe ser un objeto.');
+          event.target.value = '';
+          return;
+        }
+
+        if (data.predicciones && (typeof data.predicciones !== 'object' || Array.isArray(data.predicciones))) {
+          alert('Formato inválido: predicciones debe ser un objeto.');
+          event.target.value = '';
+          return;
+        }
+
+        // At least one expected data source must exist
+        if (!data.savedScores && !data.values && !data.predicciones) {
+          alert('El archivo JSON no tiene el formato correcto. ¿Estás subiendo el JSON generado por la página? Si es así, contacta a soporte.');
+          event.target.value = '';
+          return;
+        }
+
+        // Participant validation
+        if (data.participante !== undefined) {
+          if (!data.participante || typeof data.participante !== 'object' || Array.isArray(data.participante)) {
+            alert('Formato inválido: participante debe ser un objeto.');
+            event.target.value = '';
+            return;
+          }
+
+          if (data.participante.nombre && String(data.participante.nombre).length > 60) {
+            alert('El nombre del participante en el JSON es demasiado largo.');
+            event.target.value = '';
+            return;
+          }
+
+          if (data.participante.numero !== undefined) {
+            var nRaw = String(data.participante.numero).trim();
+            var n = Number(nRaw);
+
+            if (nRaw === '' || !Number.isInteger(n) || n < 1 || n > 99) {
+              alert('El número del participante en el JSON es inválido.');
+              event.target.value = '';
+              return;
+            }
+          }
+        }
+
+        // Restore participant fields first
+        if (data.participante) {
+          var pNum = document.getElementById('pNum');
+          var pN = document.getElementById('pN');
+
+          if (pNum) pNum.value = data.participante.numero || '';
+          if (pN) pN.value = data.participante.nombre || '';
+        }
+
+        // Restore saved group/tie values
+        savedScores = {};
+
+        if (data.savedScores) {
+          Object.keys(data.savedScores).forEach(function (k) {
+            savedScores[k] = data.savedScores[k];
+          });
+        }
+
+        // Backward compatibility: raw values
+        if (data.values) {
+          Object.keys(data.values).forEach(function (id) {
+            if (/^gl_/.test(id) || /^gv_/.test(id) || /^tie_g_/.test(id)) {
+              savedScores[id] = data.values[id];
             }
           });
-        });
-      }
-      if(data.predicciones&&data.predicciones.ties){
-        Object.keys(data.predicciones.ties).forEach(function(gid){
-          savedScores['tie_g_'+gid]=data.predicciones.ties[gid];
-        });
+        }
+
+        // Recover group scores from predicciones.grupos
+        if (data.predicciones && data.predicciones.grupos) {
+          Object.keys(data.predicciones.grupos).forEach(function (gid) {
+            (data.predicciones.grupos[gid] || []).forEach(function (m) {
+              if (m && m.id !== undefined) {
+                if (m.gL !== undefined && m.gL !== '') savedScores['gl_' + m.id] = m.gL;
+                if (m.gV !== undefined && m.gV !== '') savedScores['gv_' + m.id] = m.gV;
+              }
+            });
+          });
+        }
+
+        // Recover manual ties
+        if (data.predicciones && data.predicciones.ties) {
+          Object.keys(data.predicciones.ties).forEach(function (gid) {
+            savedScores['tie_g_' + gid] = data.predicciones.ties[gid];
+          });
+        }
+
+        // Restore DOM values
+        if (data.values) {
+          Object.keys(data.values).forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el || el.type === 'file') return;
+
+            if (el.type === 'checkbox') el.checked = !!data.values[id];
+            else el.value = data.values[id];
+
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+        }
+
+        // Backward compatibility for knockout predictions
+        if (data.predicciones && data.predicciones.elim) {
+          Object.keys(data.predicciones.elim).forEach(function (pid) {
+            var m = data.predicciones.elim[pid] || {};
+            var gl = document.getElementById('egl_' + pid);
+            var gv = document.getElementById('egv_' + pid);
+            var pen = document.getElementById('pen_' + pid);
+
+            if (gl && m.gL !== undefined) gl.value = m.gL;
+            if (gv && m.gV !== undefined) gv.value = m.gV;
+            if (pen && m.pen !== undefined) pen.value = m.pen;
+          });
+        }
+
+        // Backward compatibility for special prediction
+        if (data.predicciones && data.predicciones.esp) {
+          var sp4 = document.getElementById('sp4');
+          if (sp4 && data.predicciones.esp.g !== undefined) sp4.value = data.predicciones.esp.g;
+        }
+
+        if (data.currentGroup) {
+          var idx = grupoIds.indexOf(data.currentGroup);
+          if (idx >= 0) curGrupo = idx;
+        }
+
+        persistSaved();
+        renderGrupoActual();
+        uEN();
+        rMT3();
+        rEmp();
+        rBK();
+        autoHonor();
+        uP();
+
+        shT('✅ JSON subido correctamente');
+
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo subir el JSON. Verifica que el archivo sea válido. Si el problema persiste contacta a soporte');
       }
 
-      // Restore currently available DOM values: participant, knockout, specials, penalties, etc.
-      if(data.values){
-        Object.keys(data.values).forEach(function(id){
-          var el=document.getElementById(id);
-          if(!el||el.type==='file')return;
-          if(el.type==='checkbox')el.checked=!!data.values[id];
-          else el.value=data.values[id];
-          el.dispatchEvent(new Event('input',{bubbles:true}));
-          el.dispatchEvent(new Event('change',{bubbles:true}));
-        });
-      }
+      event.target.value = '';
+    };
 
-      // Backward compatibility for predicciones.elim / predicciones.esp when values is missing or incomplete.
-      if(data.predicciones&&data.predicciones.elim){
-        Object.keys(data.predicciones.elim).forEach(function(pid){
-          var m=data.predicciones.elim[pid]||{};
-          var gl=document.getElementById('egl_'+pid), gv=document.getElementById('egv_'+pid), pen=document.getElementById('pen_'+pid);
-          if(gl&&m.gL!==undefined)gl.value=m.gL;
-          if(gv&&m.gV!==undefined)gv.value=m.gV;
-          if(pen&&m.pen!==undefined)pen.value=m.pen;
-        });
-      }
-      if(data.predicciones&&data.predicciones.esp){
-        var sp4=document.getElementById('sp4');
-        if(sp4&&data.predicciones.esp.g!==undefined)sp4.value=data.predicciones.esp.g;
-      }
-
-      if(data.currentGroup){
-        var idx=grupoIds.indexOf(data.currentGroup);
-        if(idx>=0)curGrupo=idx;
-      }
-
-      persistSaved();
-      renderGrupoActual();
-      uEN();
-      rMT3();
-      rEmp();
-      rBK();
-      autoHonor();
-      uP();
-      shT('✅ JSON subido correctamente');
-    }catch(err){
-      console.error(err);
-      alert('No se pudo subir el JSON. Verifica que el archivo sea válido.');
-    }
-    event.target.value='';
-  };
-  reader.readAsText(file);
-}
+    reader.readAsText(file);
+  }
 function pdfRapido(){
   var nm=document.getElementById('pN').value.trim();
   var num=document.getElementById('pNum').value.trim();
