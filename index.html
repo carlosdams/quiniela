@@ -317,7 +317,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
   </div>
   <div class="elim-content">
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-      <button onclick="guardarElim()" style="background:var(--verde);border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;">💾 Guardar Eliminatoria</button>
+      <button onclick="guardarElim()" style="background:var(--verde);border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;">💾 Descargar JSON</button>
     </div>
     <div class="tab-c" id="tabC6"><div class="bk-panel"><div class="bk-title">🏆 BRACKET — CAMINO A LA FINAL</div><div class="bk-scroll"><div class="bk-inner" id="bkV"></div></div></div></div>
     <div class="tabs">
@@ -349,7 +349,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
   </div>
   <div class="esp-content">
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-      <button onclick="guardarEsp()" style="background:var(--verde);border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;">💾 Guardar Especiales</button>
+      <button onclick="guardarEsp()" style="background:var(--verde);border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;">💾 Descargar JSON</button>
     </div>
     <div class="esp-title">🏅 CUADRO DE HONOR</div>
     <div class="esp-sub">El campeón y tercer puesto se llenan automáticamente cuando completas la eliminatoria.</div>
@@ -1697,6 +1697,14 @@ function renderGrupoActual(){
 
 function navGrupo(dir){
   saveCurrentGroup();
+  if(curGrupo===0 && dir<0){
+    irA(0);
+    return;
+  }
+  if(curGrupo===11 && dir>0){
+    irA(2);
+    return;
+  }
   curGrupo=Math.max(0,Math.min(11,curGrupo+dir));
   renderGrupoActual();window.scrollTo(0,0);
 }
