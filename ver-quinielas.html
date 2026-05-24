@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  object-src 'none';
+  base-uri 'self';
+  frame-ancestors 'none';
+">
 <title>Ver Quinielas llenas</title>
 <style>
   body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#1f2937;}
@@ -33,7 +41,7 @@
     <h1>Quinielas llenas de los participantes 👥</h1>
     <p>Aquí están las quinielas completadas por los participantes que la enviaron. Haz clic para ver o descargar la quiniela en PDF.</p>
     <ul class="file-list">
-      <li><a href="quiniellas-llenas-pdf/Quiniela-2026-Carlos-Dams.pdf" target="_blank">Carlos Dams</a></li>
+      <li><a href="quiniellas-llenas-pdf/Quiniela-2026-Carlos-Dams.pdf" target="_blank" rel="noopener noreferrer">Carlos Dams</a></li>
     </ul>
 
     <section class="scoreboard">
@@ -59,9 +67,9 @@
     // Las claves son los ids de partido (1-104), y para eliminación puedes incluir 'pen' si se definió ganador por penales.
     var actualResults = {
       // gL: goles del equipo local, gV: goles del equipo visitante
-      // Ejemplo de grupo: 1: { gL: 1, gV: 0 },
-        1: { gL: 0, gV: 0 },
-        2: { gL: 1, gV: 2 },
+      // Ejemplo de grupo siendo 1 el id 1 - 1: { gL: 1, gV: 0 },
+      //  1: { gL: 0, gV: 0 },
+      //  2: { gL: 1, gV: 2 },
     };
 
     var actualElimResults = {
@@ -189,7 +197,16 @@
           tbody.appendChild(row);
         });
       }).catch(function (err) {
-        tbody.innerHTML = '<tr><td colspan="2">Error al calcular puntajes: ' + (err && err.message ? err.message : String(err)) + '</td></tr>';
+        tbody.innerHTML = '';
+
+          var row = document.createElement('tr');
+          var cell = document.createElement('td');
+
+          cell.colSpan = 2;
+          cell.textContent = 'Error al calcular puntajes: ' + (err && err.message ? err.message : String(err));
+
+          row.appendChild(cell);
+          tbody.appendChild(row);
       });
     }
 
