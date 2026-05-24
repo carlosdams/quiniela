@@ -166,10 +166,24 @@
       var tbody = document.getElementById('leaderboard-body');
       var hasActual = Object.keys(actualResults).length + Object.keys(actualElimResults).length > 0;
 
-      if (!hasActual) {
-        tbody.innerHTML = '<tr><td colspan="2">No hay resultados reales definidos. Edita <code>actualResults</code> y <code>actualElimResults</code> en el script.</td></tr>';
-        return;
-      }
+          if (!hasActual) {
+              tbody.innerHTML = '';
+
+              predictionFiles.forEach(function (file) {
+                  var row = document.createElement('tr');
+                  var nameCell = document.createElement('td');
+                  var scoreCell = document.createElement('td');
+
+                  nameCell.textContent = file.name;
+                  scoreCell.textContent = '';
+
+                  row.appendChild(nameCell);
+                  row.appendChild(scoreCell);
+                  tbody.appendChild(row);
+              });
+
+              return;
+          }
 
       tbody.innerHTML = '<tr><td colspan="2">Calculando puntajes…</td></tr>';
 
