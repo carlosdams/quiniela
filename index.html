@@ -83,8 +83,9 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
 .action-btns{display:grid;grid-template-columns:1fr;gap:10px;}
 @media (min-width:700px){.action-btns{grid-template-columns:1fr 1fr 1fr;}}
 .btn-guardar{background:#d6eeff;border:1.5px solid #6fb3ff;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#0a4f7a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-ver-quiniela{background:#e6f9ea;border:1.5px solid #8adf99;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#176239;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-pdf{background:var(--gold);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
-.btn-guardar:active,.btn-pdf:active{transform:scale(0.97);}
+.btn-guardar:active,.btn-pdf:active,.btn-ver-quiniela:active{transform:scale(0.97);}
 
 /* ── PANTALLA GRUPOS ── */
 .grupos-nav-bar{background:var(--verde2);padding:10px 12px 14px;}
@@ -277,6 +278,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',Arial,sans-seri
       <button class="btn-guardar" onclick="guardarJSON()">💾 Descargar JSON</button>
       <button class="btn-guardar" onclick="document.getElementById('jsonLoadInput').click()">📂 Subir JSON</button>
       <button class="btn-pdf" onclick="pdfRapido()">📄 Descargar PDF</button>
+      <button class="btn-ver-quiniela" onclick="window.location.href='ver-quinielas.html'">👥 Ver quinielas</button>
       <input type="file" id="jsonLoadInput" accept="application/json" style="display:none" onchange="subirJSON(event)">
     </div>
   </div>
