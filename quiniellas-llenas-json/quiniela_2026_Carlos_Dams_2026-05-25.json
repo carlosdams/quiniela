@@ -1,9 +1,8 @@
 {
   "app": "quiniela-mundial-2026",
   "version": 2,
-  "savedAt": "2026-05-24T16:20:50.096Z",
+  "savedAt": "2026-05-25T02:36:43.178Z",
   "participante": {
-    "numero": "2",
     "nombre": "Carlos Dams"
   },
   "currentGroup": "L",
@@ -154,7 +153,6 @@
     "gv_68": "1"
   },
   "values": {
-    "pNum": "2",
     "pN": "Carlos Dams",
     "gl_22": "3",
     "gv_22": "2",
