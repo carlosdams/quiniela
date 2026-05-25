@@ -764,9 +764,12 @@ function oE(inp,nId,mI){soloEnterosPositivos(inp);inp.classList.toggle('ok',inp.
   var pw=document.getElementById('pw_'+mI);
   if(pw&&a&&b&&a.value!==''&&b.value!==''){var x=parseInt(a.value),y=parseInt(b.value);
     if(!isNaN(x)&&!isNaN(y)&&x===y){var ln=document.getElementById('nL_'+mI).textContent,vn=document.getElementById('nV_'+mI).textContent;
-      pw.innerHTML='<select class="pnl" id="pen_'+mI+'" onchange="uEN();rBK();uP()"><option value="">⚽ ¿Quién pasa?</option><option value="lo">'+ln+'</option><option value="vi">'+vn+'</option></select>';}
+      var currentPen=document.getElementById('pen_'+mI);
+      var oldPen=currentPen?currentPen.value:((savedValues&&savedValues['pen_'+mI])?savedValues['pen_'+mI]:'');
+      pw.innerHTML='<select class="pnl" id="pen_'+mI+'" onchange="persistSaved();uEN();rBK();uP()"><option value="">⚽ ¿Quién pasa?</option><option value="lo">'+ln+'</option><option value="vi">'+vn+'</option></select>';
+      var penEl=document.getElementById('pen_'+mI);if(penEl)penEl.value=oldPen;}
     else pw.innerHTML='';}
-  uEN();rBK();uP();}
+  uEN();rBK();uP();persistSaved();}
 function uEN(){var all=OCT.concat(CUA).concat(SEM).concat(SFNL).concat(TER).concat(FNL);
   all.forEach(function(m){var lt=rMT(m,'lo'),vt=rMT(m,'vi');
     var nL=document.getElementById('nL_'+m.id),nV=document.getElementById('nV_'+m.id),fL=document.getElementById('fL_'+m.id),fV=document.getElementById('fV_'+m.id);
@@ -886,10 +889,10 @@ function rBK(){
 }
 
 function showTab(n){document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('act',i===n);});for(var i=0;i<8;i++){var tc=document.getElementById('tabC'+i);if(tc)tc.classList.toggle('show',i===n);}if(n===6){rBK();}}
-function spK(i){i.classList.toggle('ok',i.value.trim()!=='');uP();}
+function spK(i){i.classList.toggle('ok',i.value.trim()!=='');uP();persistSaved();}
 function uP(){var f=0,t=0;
-// Count visible inputs
-document.querySelectorAll('.sc,.msc').forEach(function(i){t++;if(i.value!=='')f++;});
+// Count visible group and eliminatoria score inputs
+document.querySelectorAll('.sc, .msc').forEach(function(i){t++;if(i.value!=='')f++;});
 // Count savedScores for groups not currently in DOM
 var visibleIds={};document.querySelectorAll('.sc').forEach(function(i){visibleIds[i.id]=true;});
 GS.forEach(function(g){g.pa.forEach(function(m){
@@ -897,8 +900,14 @@ var glId='gl_'+m.id,gvId='gv_'+m.id;
 if(!visibleIds[glId]){t++;if(savedScores[glId])f++;}
 if(!visibleIds[gvId]){t++;if(savedScores[gvId])f++;}
 });});
-document.querySelectorAll('.spi').forEach(function(i){t++;if(i.value.trim()!=='')f++;});
-var pc=t>0?Math.round(f/t*100):0;var pP=document.getElementById('pP');if(pP)pP.textContent=pc+'%';var pP1=document.getElementById('pP1');if(pP1)pP1.textContent=pc+'%';autoHonor();}
+// Count manually-entered special fields only, not readonly auto-filled honor fields
+var sp4=document.getElementById('sp4');if(sp4){t++;if(sp4.value.trim()!=='')f++;}
+var pc=t>0?Math.round(f/t*100):0;
+var pP=document.getElementById('pP');if(pP)pP.textContent=pc+'%';
+var pP1=document.getElementById('pP1');if(pP1)pP1.textContent=pc+'%';
+var pP2=document.getElementById('pP2');if(pP2)pP2.textContent=pc+'%';
+var pP3=document.getElementById('pP3');if(pP3)pP3.textContent=pc+'%';
+autoHonor();}
 function autoHonor(){
   function ganW(pid){
     var gl=parseInt((document.getElementById('egl_'+pid)||{}).value);
@@ -1711,32 +1720,83 @@ function navGrupo(dir){
   renderGrupoActual();window.scrollTo(0,0);
 }
 
-// Guardar valores de inputs para no perderlos al cambiar de grupo
+// Guardar valores de inputs para no perderlos al cambiar de grupo o recargar la página
 var savedScores={};
+var savedValues={};
 
-// Persist savedScores + small meta to localStorage
-function persistSaved(){
-  try{
-    var meta = {
-      savedScores: savedScores,
-      meta: {
-        pNum: (document.getElementById('pNum')||{}).value||'',
-        pN: (document.getElementById('pN')||{}).value||'',
-        sp4: (document.getElementById('sp4')||{}).value||''
-      }
-    };
-    localStorage.setItem('quiniela2026_saved', JSON.stringify(meta));
-  }catch(e){console.warn('persistSaved failed',e);}
-}
+// Persist savedScores + all relevant form values to localStorage
+  function persistSaved() {
+    try {
+      var values = {};
+
+      document.querySelectorAll('input[id], select[id], textarea[id]').forEach(function (el) {
+        if (el.type === 'file') return;
+
+        if (el.type === 'checkbox') {
+          values[el.id] = el.checked;
+        } else {
+          values[el.id] = el.value;
+        }
+      });
+
+      savedValues = values;
+
+      var data = {
+        savedScores: savedScores,
+        savedValues: values
+      };
+
+      localStorage.setItem('quiniela2026_saved', JSON.stringify(data));
+    } catch (e) {
+      console.warn('persistSaved failed', e);
+    }
+  }
 
 function loadSaved(){
   try{
-    var raw = localStorage.getItem('quiniela2026_saved');
-    if(!raw) return;
-    var obj = JSON.parse(raw);
-    if(obj && obj.savedScores){ savedScores = obj.savedScores; }
-    if(obj && obj.meta){ if(obj.meta.pNum) (document.getElementById('pNum')||{}).value = obj.meta.pNum; if(obj.meta.pN) (document.getElementById('pN')||{}).value = obj.meta.pN; if(obj.meta.sp4) (document.getElementById('sp4')||{}).value = obj.meta.sp4; }
+    var raw=localStorage.getItem('quiniela2026_saved');
+    if(!raw)return;
+    var obj=JSON.parse(raw);
+    if(obj&&obj.savedScores)savedScores=obj.savedScores;
+    if(obj&&obj.savedValues)savedValues=obj.savedValues;
+
+    // Compatibility with older saved data from prior versions of this page
+    if(obj&&obj.meta){
+      savedValues=savedValues||{};
+      if(obj.meta.pNum)savedValues.pNum=obj.meta.pNum;
+      if(obj.meta.pN)savedValues.pN=obj.meta.pN;
+      if(obj.meta.sp4)savedValues.sp4=obj.meta.sp4;
+    }
   }catch(e){console.warn('loadSaved failed',e);}
+}
+
+function restoreSavedValues(){
+  if(!savedValues)return;
+
+  Object.keys(savedValues).forEach(function(id){
+    if(/^pen_/.test(id))return;
+    var el=document.getElementById(id);
+    if(!el||el.type==='file')return;
+    if(el.type==='checkbox')el.checked=!!savedValues[id];
+    else el.value=savedValues[id];
+    if(el.classList&&(el.classList.contains('sc')||el.classList.contains('msc')||el.classList.contains('esp-inp'))){
+      el.classList.toggle('ok',el.value!=='');
+    }
+  });
+
+  // Recreate penalty dropdowns for tied eliminatoria matches, then restore selected penalty winners
+  OCT.concat(CUA).concat(SEM).concat(SFNL).concat(TER).concat(FNL).forEach(function(m){
+    var a=document.getElementById('egl_'+m.id);
+    if(a)oE(a,null,m.id);
+  });
+
+  Object.keys(savedValues).forEach(function(id){
+    if(!/^pen_/.test(id))return;
+    var el=document.getElementById(id);
+    if(el)el.value=savedValues[id];
+  });
+
+  autoHonor();uEN();rMT3();rEmp();rBK();uP();
 }
 
 function saveCurrentGroup(){
@@ -1766,12 +1826,13 @@ function oS(inp,nId,gI,mI){
   var a=document.getElementById('gl_'+mI),b=document.getElementById('gv_'+mI);
   var tr=document.getElementById('tr_'+mI);
   if(tr)tr.classList.toggle('dn',a&&b&&a.value!==''&&b.value!=='');
-  rT(gI);uEN();rMT3();rEmp();rBK();uP();
+  rT(gI);uEN();rMT3();rEmp();rBK();uP();persistSaved();
 }
 
 // Init nueva estructura
 rE('oc',OCT);rE('cc',CUA);rE('qq',SEM);rE('ss',SFNL);rE('t3',TER);rE('f3',FNL);
 // Render primer grupo
 renderGrupoActual();
+restoreSavedValues();
 uP();
 </script></body></html>
